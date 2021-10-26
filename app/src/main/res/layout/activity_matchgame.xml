@@ -20,7 +20,7 @@
             android:id="@+id/clickCnt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Clicks: 0}"
+            android:text="Clicks: 0"
             android:hint="Click Count"
             android:textAllCaps="true"
             android:textColor="#E34E2A"
@@ -31,18 +31,6 @@
             tools:layout_editor_absoluteX="1dp"
             android:layout_weight="1"
             />
-<!--    </LinearLayout>-->
-
-<!--    <LinearLayout-->
-<!--        android:id="@+id/linearLayout2"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:layout_marginBottom="32dp"-->
-<!--        android:orientation="vertical"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/linearLayout"-->
-<!--        app:layout_constraintVertical_bias="0.0"-->
-<!--        tools:layout_editor_absoluteX="1dp">-->
 
         <TextView
             android:id="@+id/matchCnt"

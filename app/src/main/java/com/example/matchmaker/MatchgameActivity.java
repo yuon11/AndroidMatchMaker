@@ -1,8 +1,12 @@
 package com.example.matchmaker;
 
+import static java.lang.Thread.sleep;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,9 +21,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.sql.Array;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class MatchgameActivity extends AppCompatActivity {
 
@@ -53,6 +59,7 @@ public class MatchgameActivity extends AppCompatActivity {
             imageView.setLayoutParams(param);
             imageView.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.mipmap.cardback, null));
             imageView.setBackground(ResourcesCompat.getDrawable(getResources(), R.mipmap.cardback_round, null));
+            imageView.setTag(R.mipmap.cardback);
             gridLayout.addView(imageView);
             final int finalI = i;
 
@@ -70,73 +77,178 @@ public class MatchgameActivity extends AppCompatActivity {
                     ImageView thisView = (ImageView) v;
 
                     // ADD ANIMATION TO VIEW
-                    animateCard(thisView);
+                    // animateCard(thisView);
+
+                    // Card flip animation
+                    flipCardImg(thisView, finalI);
 
                     // UPDATE CLICK COUNT
-                    TextView textView = findViewById(R.id.clickCnt);
-                    textView.setText("Clicks: " + Integer.toString(++clickCnt));
+                    updateClickCnt();
 
-                    if (selectedCard.get("CurrentCard")!=null && selectedCard.getInt("CurrentCard")!=finalI)
-                    {
-                        // A card is selected, so check if there is a match here
-                        if (checkMatch(finalI)){
+                    // Update Cards if a match is made
+                    updateGameBoard(finalI, v);
 
-                            Log.d("Match Made", "Matched Card " + selectedCard.get("CurrentCard") + " With " + finalI);
-                            thisView.setVisibility(View.INVISIBLE);
-                            // thisView.setVisibility(View.GONE);
-                        }
-                    }
-                    else{
-                        // Set this as current card
-                        Log.d("Current Card", "Currently selected card is " + finalI + " With value " + getCardValue(finalI));
-                        selectedCard.putInt("CurrentCard", finalI);
-                    }
-                }
-            });
-
-            imageView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    Toast.makeText(MatchgameActivity.this, "i="+ finalI, Toast.LENGTH_SHORT).show();
-                    ImageView thisView = (ImageView) v;
-                    thisView.setRotation(imageView.getRotation() + 180);
-                    return true;
+                    // Check game state
+                    checkForWin();
                 }
             });
         }
+    }
+
+    private void updateClickCnt(){
+        TextView textView = findViewById(R.id.clickCnt);
+        textView.setText("Clicks: " + Integer.toString(++clickCnt));
+    }
+
+    private void updateGameBoard(int finalI, View v){
+
+        GridLayout gridLayout = findViewById(R.id.rooLayout);
+
+        ImageView thisView = (ImageView) v;
+        ImageView matchedView = (ImageView) gridLayout.getChildAt(selectedCard.getInt("CurrentCard"));
+
+        if (selectedCard.get("CurrentCard")==null)
+        {
+            Log.d("Current Card", "Currently selected card is " + finalI + " With value " + getCardValue(finalI));
+            selectedCard.putInt("CurrentCard", finalI);
+            return;
+        }
+
+        if (selectedCard.get("CurrentCard")!=null && selectedCard.getInt("CurrentCard")!=finalI){
+            // A card is selected, so check if there is a match here
+
+            if (checkMatch(finalI)){
+                Log.d("Match Made", "Matched Card " + selectedCard.get("CurrentCard") + " With " + finalI);
+                thisView.setVisibility(View.INVISIBLE);
+                matchedView.setVisibility(View.INVISIBLE);
+            }
+            else{
+                // Set this as current card
+                Log.d("Mismatch", "Currently selected card is " + finalI + " Prior card is" + selectedCard.get("CurrentCard"));
+                flipCardImg(matchedView, selectedCard.getInt("CurrentCard"));
+                flipCardImg(thisView, finalI);
+            }
+            selectedCard.clear();
+        }
+
+        else if (selectedCard.get("CurrentCard")!=null && selectedCard.getInt("CurrentCard")==finalI){
+            selectedCard.clear();
+        }
+
     }
 
     private void animateCard(View thisView){
         // ADD ANIMATION TO VIEW
         thisView.animate();
         RotateAnimation rotate = new RotateAnimation(0, 180, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        rotate.setDuration(500);
+        rotate.setDuration(300);
         rotate.setInterpolator(new LinearInterpolator());
         thisView.startAnimation(rotate);
     }
 
     private void flipCardImg(View v, int viewIndx){
-        ImageView thisView = (ImageView) v;
-
         // If the Cardback is showing
+        //
+        ImageView thisView = (ImageView) v;
         animateCard(thisView);
-        if (thisView.getDrawable()==ResourcesCompat.getDrawable(getResources(), R.mipmap.cardback, null)){
-            // Set view image as the card number
+
+        // Check If card is currently showing back logo
+        if (((Integer) thisView.getTag()== R.mipmap.cardback)){
             int cardVal = getCardValue(viewIndx);
-            // thisView.set
+            Log.d("Flip Image", "Changing drawable in IF statement");
+            thisView.setTag(returnObjTag(cardVal));
+            thisView.setImageDrawable(ResourcesCompat.getDrawable(getResources(), (Integer) returnObjTag(cardVal), null));
         }
         else{
+            Log.d("Flip Image", "Changing drawable in ELSE statement");
+
+            thisView.setTag(R.mipmap.cardback);
             thisView.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.mipmap.cardback, null));
-            // thisView.setBackground(ResourcesCompat.getDrawable(getResources(), R.mipmap.cardback_round, null));
         }
     }
+
+    public Object returnObjTag(int cardVal){
+        Object imgTag = R.mipmap.zero;
+        switch (cardVal) {
+            case 1:  imgTag = R.mipmap.one;
+                break;
+            case 2:  imgTag = R.mipmap.two;
+                break;
+            case 3:  imgTag = R.mipmap.three;
+                break;
+            case 4:  imgTag = R.mipmap.four;
+                break;
+            case 5:  imgTag = R.mipmap.five;
+                break;
+            case 6:  imgTag = R.mipmap.six;
+                break;
+            case 7:  imgTag = R.mipmap.seven;
+                break;
+            case 8:  imgTag = R.mipmap.eight;
+                break;
+            case 9:  imgTag = R.mipmap.nine;
+                break;
+            case 10: imgTag = R.mipmap.ten;
+                break;
+            case 11: imgTag = R.mipmap.eleven;
+                break;
+            case 12: imgTag = R.mipmap.twelve;
+                break;
+            case 13:  imgTag = R.mipmap.thirteen;
+                break;
+            case 14:  imgTag = R.mipmap.fourteen;
+                break;
+            case 15:  imgTag = R.mipmap.fifteen;
+                break;
+            case 16:  imgTag = R.mipmap.sixteen;
+                break;
+            case 17:  imgTag = R.mipmap.seventeen;
+                break;
+            case 18: imgTag = R.mipmap.eighteen;
+                break;
+            case 19: imgTag = R.mipmap.ninteen;
+                break;
+            case 20: imgTag = R.mipmap.twenty;
+                break;
+            case 21: imgTag = R.mipmap.twentyone;
+                break;
+            case 22: imgTag = R.mipmap.twentytwo;
+                break;
+            case 23:  imgTag = R.mipmap.twentythree;
+                break;
+            case 24:  imgTag = R.mipmap.twentyfour;
+                break;
+            case 25: imgTag = R.mipmap.twentyfive;
+                break;
+            default: imgTag = R.mipmap.zero;
+                break;
+        }
+        return imgTag;
+    }
+
+    // Check Game board for win condition
+    //
+    private void checkForWin(){
+        int column = getIntent().getIntExtra("column",4);
+        int numPairs = (column*column)/2;
+
+        if (matchCnt==numPairs)
+        {
+            Intent intent = new Intent(this, WinActivity.class);
+            intent.putExtra("score", clickCnt);
+            intent.putExtra("difficulty", column);
+            startActivity(intent);
+        }
+    }
+
     //
     // The int represents the dict key for the card clicked
     //
     private boolean checkMatch(int checkCardIndx){
         int cardVal = getCardValue(checkCardIndx);
+        int selectedCardVal = getCardValue(selectedCard.getInt("CurrentCard"));
 
-        if (cardVal == getCardValue(selectedCard.getInt("CurrentCard")))
+        if (cardVal == selectedCardVal)
         {
             Log.d("Match Made", "Made match with " + checkCardIndx +" and "+ selectedCard.getInt("CurrentCard"));
             Log.d("Match Values", "Matched on " + cardVal);
@@ -148,17 +260,14 @@ public class MatchgameActivity extends AppCompatActivity {
                     + checkCardIndx + " With " + selectedCard.getInt("CurrentCard")
                     + " On Number "+cardVal, Toast.LENGTH_SHORT).show();
 
-            // deactivate both cards
-            selectedCard.clear();
             return true;
         }
         else
         {
             // clear current selected card, and turn both cards back over
-            Log.d("NO Match Made", "Did Not Match Card " + selectedCard.get("CurrentCard") + " With " + checkCardIndx);
+            Log.d("No Match Made", "Did Not Match Card " + selectedCard.get("CurrentCard") + " With " + checkCardIndx);
             Log.d("Reset Selected Card", "Cards Reset");
             Toast.makeText(MatchgameActivity.this, "No Match with " + checkCardIndx + " and " + selectedCard.getInt("CurrentCard") + ". Resetting Pair.", Toast.LENGTH_SHORT).show();
-            selectedCard.clear();
             return false;
         }
     }
@@ -170,16 +279,22 @@ public class MatchgameActivity extends AppCompatActivity {
         int numPairs = (column*column)/2;
         gameArray = new ArrayList<>();
 
+        //
+        // 0 acts as our 'joker' when row*col is odd
+        //
+        if ( column*column % 2 != 0 )
+            gameArray.add(0);
+
+        // Add a Pair of numbers to be taken later for matching
+        //
         for (int i=0; i<numPairs; i++){
-            // Add a Pair of numbers to be taken later for matching
-            //
             gameArray.add(i+1);
             gameArray.add(i+1);
         }
     }
 
-    // Function select an element base on index
-    // and return an element
+    // Function select an element base on index and return an element
+    //
     private int getRandomElement()
     {
         Random rand = new Random();
@@ -191,7 +306,6 @@ public class MatchgameActivity extends AppCompatActivity {
     }
 
     private int getCardValue(int checkCardIndx){
-        int cardVal = gameBoard.getInt(String.valueOf(checkCardIndx));
-        return cardVal;
+        return gameBoard.getInt(String.valueOf(checkCardIndx));
     }
 }

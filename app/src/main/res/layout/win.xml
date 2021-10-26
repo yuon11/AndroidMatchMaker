@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WinActivity">
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="39dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="1dp"
+        android:weightSum="2">>
+
+        <TextView
+            android:id="@+id/editTextTextPersonName"
+            android:layout_width="match_parent"
+            android:layout_height="274dp"
+            android:layout_weight="1"
+            android:ems="10"
+            android:text="MEMORY MATCH"
+            android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textColor="#E34E2A"
+            android:textSize="24sp"
+            android:textStyle="bold|italic"
+            app:layout_constraintTop_toTopOf="@+id/linearLayout2"
+            tools:layout_editor_absoluteX="1dp" />
+        <TextView
+            android:id="@+id/clickCnt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:ems="10"
+            android:hint="Round Score"
+            android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textColor="#E34E2A"
+            android:textSize="24sp"
+            android:textStyle="bold|italic"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:layout_editor_absoluteX="1dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <LinearLayout
+
+        android:layout_width="411dp"
+        android:layout_height="511dp"
+        android:layout_marginTop="219dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="parent">
+
+        <Button
+            android:id="@+id/easyButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="playAgain"
+            android:text="Play Again" />
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
