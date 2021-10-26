@@ -76,9 +76,6 @@ public class MatchgameActivity extends AppCompatActivity {
                     Toast.makeText(MatchgameActivity.this, "Card Value: "+ getCardValue(finalI), Toast.LENGTH_SHORT).show();
                     ImageView thisView = (ImageView) v;
 
-                    // ADD ANIMATION TO VIEW
-                    // animateCard(thisView);
-
                     // Card flip animation
                     flipCardImg(thisView, finalI);
 
@@ -95,27 +92,31 @@ public class MatchgameActivity extends AppCompatActivity {
         }
     }
 
+    // Update Click View
+    //
     private void updateClickCnt(){
         TextView textView = findViewById(R.id.clickCnt);
         textView.setText("Clicks: " + Integer.toString(++clickCnt));
     }
 
+    // Run through the step for updating the game board
+    //
     private void updateGameBoard(int finalI, View v){
 
         GridLayout gridLayout = findViewById(R.id.rooLayout);
-
         ImageView thisView = (ImageView) v;
         ImageView matchedView = (ImageView) gridLayout.getChildAt(selectedCard.getInt("CurrentCard"));
 
-        if (selectedCard.get("CurrentCard")==null)
-        {
+        // Set Card as currently selected
+        //
+        if (selectedCard.get("CurrentCard")==null){
             Log.d("Current Card", "Currently selected card is " + finalI + " With value " + getCardValue(finalI));
             selectedCard.putInt("CurrentCard", finalI);
             return;
         }
-
+        // Check for match since selected and clicked on is different
+        //
         if (selectedCard.get("CurrentCard")!=null && selectedCard.getInt("CurrentCard")!=finalI){
-            // A card is selected, so check if there is a match here
 
             if (checkMatch(finalI)){
                 Log.d("Match Made", "Matched Card " + selectedCard.get("CurrentCard") + " With " + finalI);
@@ -123,8 +124,7 @@ public class MatchgameActivity extends AppCompatActivity {
                 matchedView.setVisibility(View.INVISIBLE);
             }
             else{
-                // Set this as current card
-                Log.d("Mismatch", "Currently selected card is " + finalI + " Prior card is" + selectedCard.get("CurrentCard"));
+                Log.d("Mismatch", "No match made is " + finalI + " Prior card is" + selectedCard.get("CurrentCard"));
                 flipCardImg(matchedView, selectedCard.getInt("CurrentCard"));
                 flipCardImg(thisView, finalI);
             }
@@ -134,11 +134,15 @@ public class MatchgameActivity extends AppCompatActivity {
         else if (selectedCard.get("CurrentCard")!=null && selectedCard.getInt("CurrentCard")==finalI){
             selectedCard.clear();
         }
+        else{
+            Log.d("INVALID MOVE", "Something unexpected happened");
+        }
 
     }
 
+    // ADD ANIMATION TO VIEW
+    //
     private void animateCard(View thisView){
-        // ADD ANIMATION TO VIEW
         thisView.animate();
         RotateAnimation rotate = new RotateAnimation(0, 180, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         rotate.setDuration(300);
@@ -167,6 +171,8 @@ public class MatchgameActivity extends AppCompatActivity {
         }
     }
 
+    // Return reference to necessary image number pic
+    //
     public Object returnObjTag(int cardVal){
         Object imgTag = R.mipmap.zero;
         switch (cardVal) {
@@ -241,6 +247,12 @@ public class MatchgameActivity extends AppCompatActivity {
         }
     }
 
+    // UPDATE MATCH COUNT
+    private void updateMatchCnt(){
+        TextView textView = findViewById(R.id.matchCnt);
+        textView.setText("Matches: "+Integer.toString(++matchCnt));
+    }
+
     //
     // The int represents the dict key for the card clicked
     //
@@ -252,14 +264,10 @@ public class MatchgameActivity extends AppCompatActivity {
         {
             Log.d("Match Made", "Made match with " + checkCardIndx +" and "+ selectedCard.getInt("CurrentCard"));
             Log.d("Match Values", "Matched on " + cardVal);
-
-            // UPDATE CLICK COUNT
-            TextView textView = findViewById(R.id.matchCnt);
-            textView.setText("Matches: "+Integer.toString(++matchCnt));
+            updateMatchCnt();
             Toast.makeText(MatchgameActivity.this, "Matched Card "
                     + checkCardIndx + " With " + selectedCard.getInt("CurrentCard")
                     + " On Number "+cardVal, Toast.LENGTH_SHORT).show();
-
             return true;
         }
         else
@@ -305,6 +313,8 @@ public class MatchgameActivity extends AppCompatActivity {
         return value;
     }
 
+    // Check the gameboard for the card value assigned at game start
+    //
     private int getCardValue(int checkCardIndx){
         return gameBoard.getInt(String.valueOf(checkCardIndx));
     }
